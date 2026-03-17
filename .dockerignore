@@ -52,7 +52,6 @@ logs/*
 *.log
 
 # Docker
-Dockerfile
 docker-compose*.yml
 .dockerignore
 

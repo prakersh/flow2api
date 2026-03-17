@@ -1,7 +1,7 @@
 """
-浏览器自动化获取 reCAPTCHA token
-使用 nodriver (undetected-chromedriver 继任者) 实现反检测浏览器
-支持常驻模式：为每个 project_id 自动创建常驻标签页，即时生成 token
+Browser automation to get reCAPTCHA token
+Using nodriver (undetected-chromedriver successor) for anti-detection browser
+Resident mode support: automatically creates resident tab for each project_id for instant token generation
 """
 import asyncio
 import time
@@ -14,13 +14,13 @@ from ..core.logger import debug_logger
 from ..core.config import config
 
 
-# ==================== Docker 环境检测 ====================
+# ==================== Docker Environment Detection ====================
 def _is_running_in_docker() -> bool:
-    """检测是否在 Docker 容器中运行"""
-    # 方法1: 检查 /.dockerenv 文件
+    """Detect if running in Docker container"""
+    # Method 1: Check /.dockerenv file
     if os.path.exists('/.dockerenv'):
         return True
-    # 方法2: 检查 cgroup
+    # Method 2: Check cgroup
     try:
         with open('/proc/1/cgroup', 'r') as f:
             content = f.read()
@@ -28,7 +28,7 @@ def _is_running_in_docker() -> bool:
                 return True
     except:
         pass
-    # 方法3: 检查环境变量
+    # Method 3: Check environment variables
     if os.environ.get('DOCKER_CONTAINER') or os.environ.get('KUBERNETES_SERVICE_HOST'):
         return True
     return False
@@ -38,7 +38,7 @@ IS_DOCKER = _is_running_in_docker()
 
 
 def _is_truthy_env(name: str) -> bool:
-    """判断环境变量是否为 true。"""
+    """Check if environment variable is true."""
     value = os.environ.get(name, "")
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
@@ -50,91 +50,91 @@ ALLOW_DOCKER_HEADED = (
 DOCKER_HEADED_BLOCKED = IS_DOCKER and not ALLOW_DOCKER_HEADED
 
 
-# ==================== nodriver 自动安装 ====================
+# ==================== nodriver Auto Installation ====================
 def _run_pip_install(package: str, use_mirror: bool = False) -> bool:
-    """运行 pip install 命令
-    
+    """Run pip install command
+
     Args:
-        package: 包名
-        use_mirror: 是否使用国内镜像
-    
+        package: Package name
+        use_mirror: Whether to use China mirror
+
     Returns:
-        是否安装成功
+        Whether installation was successful
     """
     cmd = [sys.executable, '-m', 'pip', 'install', package]
     if use_mirror:
         cmd.extend(['-i', 'https://pypi.tuna.tsinghua.edu.cn/simple'])
-    
+
     try:
-        debug_logger.log_info(f"[BrowserCaptcha] 正在安装 {package}...")
-        print(f"[BrowserCaptcha] 正在安装 {package}...")
+        debug_logger.log_info(f"[BrowserCaptcha] Installing {package}...")
+        print(f"[BrowserCaptcha] Installing {package}...")
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         if result.returncode == 0:
-            debug_logger.log_info(f"[BrowserCaptcha] ✅ {package} 安装成功")
-            print(f"[BrowserCaptcha] ✅ {package} 安装成功")
+            debug_logger.log_info(f"[BrowserCaptcha] ✅ {package} installed successfully")
+            print(f"[BrowserCaptcha] ✅ {package} installed successfully")
             return True
         else:
-            debug_logger.log_warning(f"[BrowserCaptcha] {package} 安装失败: {result.stderr[:200]}")
+            debug_logger.log_warning(f"[BrowserCaptcha] {package} installation failed: {result.stderr[:200]}")
             return False
     except Exception as e:
-        debug_logger.log_warning(f"[BrowserCaptcha] {package} 安装异常: {e}")
+        debug_logger.log_warning(f"[BrowserCaptcha] {package} installation exception: {e}")
         return False
 
 
 def _ensure_nodriver_installed() -> bool:
-    """确保 nodriver 已安装
-    
+    """Ensure nodriver is installed
+
     Returns:
-        是否安装成功/已安装
+        Whether installation was successful/already installed
     """
     try:
         import nodriver
-        debug_logger.log_info("[BrowserCaptcha] nodriver 已安装")
+        debug_logger.log_info("[BrowserCaptcha] nodriver is installed")
         return True
     except ImportError:
         pass
-    
-    debug_logger.log_info("[BrowserCaptcha] nodriver 未安装，开始自动安装...")
-    print("[BrowserCaptcha] nodriver 未安装，开始自动安装...")
-    
-    # 先尝试官方源
+
+    debug_logger.log_info("[BrowserCaptcha] nodriver not installed, starting auto-install...")
+    print("[BrowserCaptcha] nodriver not installed, starting auto-install...")
+
+    # Try official source first
     if _run_pip_install('nodriver', use_mirror=False):
         return True
-    
-    # 官方源失败，尝试国内镜像
-    debug_logger.log_info("[BrowserCaptcha] 官方源安装失败，尝试国内镜像...")
-    print("[BrowserCaptcha] 官方源安装失败，尝试国内镜像...")
+
+    # Official source failed, try mirror
+    debug_logger.log_info("[BrowserCaptcha] Official source installation failed, trying mirror...")
+    print("[BrowserCaptcha] Official source installation failed, trying mirror...")
     if _run_pip_install('nodriver', use_mirror=True):
         return True
-    
-    debug_logger.log_error("[BrowserCaptcha] ❌ nodriver 自动安装失败，请手动安装: pip install nodriver")
-    print("[BrowserCaptcha] ❌ nodriver 自动安装失败，请手动安装: pip install nodriver")
+
+    debug_logger.log_error("[BrowserCaptcha] ❌ nodriver auto-install failed, please install manually: pip install nodriver")
+    print("[BrowserCaptcha] ❌ nodriver auto-install failed, please install manually: pip install nodriver")
     return False
 
 
-# 尝试导入 nodriver
+# Try importing nodriver
 uc = None
 NODRIVER_AVAILABLE = False
 
 if DOCKER_HEADED_BLOCKED:
     debug_logger.log_warning(
-        "[BrowserCaptcha] 检测到 Docker 环境，默认禁用内置浏览器打码。"
-        "如需启用请设置 ALLOW_DOCKER_HEADED_CAPTCHA=true，并提供 DISPLAY/Xvfb。"
+        "[BrowserCaptcha] Detected Docker environment, default disabled built-in browser captcha."
+        "To enable, set ALLOW_DOCKER_HEADED_CAPTCHA=true and provide DISPLAY/Xvfb."
     )
-    print("[BrowserCaptcha] ⚠️ 检测到 Docker 环境，默认禁用内置浏览器打码")
-    print("[BrowserCaptcha] 如需启用请设置 ALLOW_DOCKER_HEADED_CAPTCHA=true，并提供 DISPLAY/Xvfb")
+    print("[BrowserCaptcha] WARNING: Detected Docker environment, default disabled built-in browser captcha")
+    print("[BrowserCaptcha] To enable, set ALLOW_DOCKER_HEADED_CAPTCHA=true and provide DISPLAY/Xvfb")
 else:
     if IS_DOCKER and ALLOW_DOCKER_HEADED:
         debug_logger.log_warning(
-            "[BrowserCaptcha] Docker 内置浏览器打码白名单已启用，请确保 DISPLAY/Xvfb 可用"
+            "[BrowserCaptcha] Docker built-in browser captcha whitelist enabled, ensure DISPLAY/Xvfb is available"
         )
-        print("[BrowserCaptcha] ✅ Docker 内置浏览器打码白名单已启用")
+        print("[BrowserCaptcha] OK: Docker built-in browser captcha whitelist enabled")
     if _ensure_nodriver_installed():
         try:
             import nodriver as uc
             NODRIVER_AVAILABLE = True
         except ImportError as e:
-            debug_logger.log_error(f"[BrowserCaptcha] nodriver 导入失败: {e}")
+            debug_logger.log_error(f"[BrowserCaptcha] nodriver import failed: {e}")
             print(f"[BrowserCaptcha] ❌ nodriver 导入失败: {e}")
 
 
@@ -220,16 +220,16 @@ class BrowserCaptchaService:
             try:
                 # 尝试获取浏览器信息验证存活
                 if self.browser.stopped:
-                    debug_logger.log_warning("[BrowserCaptcha] 浏览器已停止，重新初始化...")
+                    debug_logger.log_warning("[BrowserCaptcha] Browser stopped, reinitializing...")
                     self._initialized = False
                 else:
                     return
             except Exception:
-                debug_logger.log_warning("[BrowserCaptcha] 浏览器无响应，重新初始化...")
+                debug_logger.log_warning("[BrowserCaptcha] Browser not responding, reinitializing...")
                 self._initialized = False
 
         try:
-            debug_logger.log_info(f"[BrowserCaptcha] 正在启动 nodriver 浏览器 (用户数据目录: {self.user_data_dir})...")
+            debug_logger.log_info(f"[BrowserCaptcha] Starting nodriver browser (user data dir: {self.user_data_dir})...")
 
             # 确保 user_data_dir 存在
             os.makedirs(self.user_data_dir, exist_ok=True)
