@@ -141,8 +141,29 @@ The system will automatically convert your session token to an access token.
 For automatic token refresh, install the [Flow2API Token Updater](https://github.com/TheSmallHanCat/Flow2API-Token-Updater) Chrome extension:
 
 1. Install the extension from the link above
-2. Configure the Connection Endpoint and Token in the extension settings
-3. The extension will automatically extract and update your Google Labs cookies
+2. Go to Flow2API Admin Panel → Settings → Plugin Connection Settings
+3. Copy the **Connection Endpoint** (e.g., `http://your-server:38000`)
+4. Copy the **Connection Token**
+5. Configure both in the Chrome extension settings
+6. The extension will automatically extract and update your Google Labs cookies
+
+### Quick Start: Your First API Call
+
+After adding a token, test the API:
+
+```bash
+# Image generation
+curl -X POST "http://localhost:38000/v1/chat/completions" \
+  -H "Authorization: Bearer YOUR_TOKEN_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemini-3.0-flash-image-landscape",
+    "messages": [{"role": "user", "content": "A cute cat"}],
+    "stream": true
+  }'
+```
+
+Find your token ID in the Admin Panel → Tokens page.
 
 ### Understanding Tokens
 
@@ -157,6 +178,9 @@ For automatic token refresh, install the [Flow2API Token Updater](https://github
 - **Invalid token**: Make sure you're logged into Google Labs with a valid account
 - **Token expired**: Re-import a fresh session token from your browser
 - **No credits**: Your Google account needs credits in Google Labs to generate images/videos
+- **401 Unauthorized**: Token may be disabled. Check Admin Panel → Tokens
+- **Connection refused**: Ensure Docker container is running (`docker compose ps`)
+- **CORS errors**: If calling from frontend, add your domain to allowed origins in settings
 
 ## Supported Models
 
