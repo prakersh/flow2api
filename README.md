@@ -115,7 +115,7 @@ python main.py
 
 ### First Access
 
-After the service starts, access the admin panel at: **http://localhost:8000**. After first login, please change the password immediately!
+After the service starts, access the admin panel at: **http://localhost:38000**. After first login, please change the password immediately!
 
 - **Username**: `admin`
 - **Password**: `admin`
@@ -149,7 +149,10 @@ For automatic token refresh, install the [Flow2API Token Updater](https://github
 
 ### Quick Start: Your First API Call
 
-After adding a token, test the API:
+After adding a token:
+
+1. **Find your token ID**: Admin Panel → Tokens → Copy the ID (number) from the token list
+2. **Test the API**:
 
 ```bash
 # Image generation
@@ -163,7 +166,7 @@ curl -X POST "http://localhost:38000/v1/chat/completions" \
   }'
 ```
 
-Find your token ID in the Admin Panel → Tokens page.
+**Check server status**: Visit `http://localhost:38000/api/status` or Admin Panel → Settings
 
 ### Understanding Tokens
 
@@ -336,7 +339,7 @@ Find your token ID in the Admin Panel → Tokens page.
 > For streaming responses, replace the path with `:streamGenerateContent?alt=sse`.
 
 ```bash
-curl -X POST "http://localhost:8000/models/gemini-3.1-flash-image:generateContent" \
+curl -X POST "http://localhost:38000/models/gemini-3.1-flash-image:generateContent" \
   -H "x-goog-api-key: han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -370,7 +373,7 @@ curl -X POST "http://localhost:8000/models/gemini-3.1-flash-image:generateConten
 ### Text-to-Image
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -388,7 +391,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 ### Image-to-Image
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -417,7 +420,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 ### Text-to-Video
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -435,7 +438,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 ### First-and-Last Frame Video Generation
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -474,7 +477,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 > Currently supports up to **3 reference images**.
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
