@@ -1301,7 +1301,7 @@ class GenerationHandler:
                             debug_logger.log_warning("[UPSAMPLE] Returned result is empty")
                             if stream:
                                 yield self._create_stream_chunk(f"⚠️ Upscale failed, returning original image...\n")
-                            break  # 空结果不重试
+                            break  # Empty result, no retry
 
                     except Exception as e:
                         error_str = str(e)
@@ -1317,7 +1317,7 @@ class GenerationHandler:
                             continue
                         else:
                             if stream:
-                                yield self._create_stream_chunk(f"⚠️ 放大失败: {error_str}，返回原图...\n")
+                                yield self._create_stream_chunk(f"⚠️ Upscale failed: {error_str}, returning original image...\n")
                             break
                 if image_trace is not None:
                     image_trace["upsample_ms"] = int((time.time() - upsample_started_at) * 1000)
@@ -1394,7 +1394,7 @@ class GenerationHandler:
 
             # TIER_TWO accounts need to use ultra version models
             if user_tier == "PAYGATE_TIER_TWO":
-                # 如果模型 key 不包含 ultra，自动添加
+                # If model key does not contain ultra, automatically add
                 if "ultra" not in model_key:
                     # veo_3_1_i2v_s_fast_fl -> veo_3_1_i2v_s_fast_ultra_fl
                     # veo_3_1_i2v_s_fast_portrait_fl -> veo_3_1_i2v_s_fast_portrait_ultra_fl
@@ -1404,7 +1404,7 @@ class GenerationHandler:
                     if "_fl" in model_key:
                         model_key = model_key.replace("_fl", "_ultra_fl")
                     else:
-                        # 直接在末尾添加 _ultra
+                        # Directly add _ultra at the end
                         model_key = model_key + "_ultra"
                     
                     if stream:
@@ -1413,7 +1413,7 @@ class GenerationHandler:
 
             # TIER_ONE accounts need to use non-ultra version models
             elif user_tier == "PAYGATE_TIER_ONE":
-                # 如果模型 key 包含 ultra，需要移除（避免用户误用）
+                # If model key contains ultra, need to remove (to avoid user misuse)
                 if "ultra" in model_key:
                     # veo_3_1_i2v_s_fast_ultra_fl -> veo_3_1_i2v_s_fast_fl
                     # veo_3_1_t2v_fast_ultra -> veo_3_1_t2v_fast
@@ -1424,7 +1424,7 @@ class GenerationHandler:
                         yield self._create_stream_chunk(f"TIER_ONE account automatically switched to standard model: {model_key}\n")
                     debug_logger.log_info(f"[VIDEO] TIER_ONE account, model auto-adjusted: {model_config['model_key']} -> {model_key}")
 
-            # 更新 model_config 中的 model_key
+            # Update model_key in model_config
             model_config = dict(model_config)  # Create copy to avoid modifying original config
             model_config["model_key"] = model_key
 
@@ -1452,7 +1452,7 @@ class GenerationHandler:
                     yield self._create_error_response(error_msg, status_code=400)
                     return
 
-            # R2V: 多图生成 - 当前上游协议最多 3 张参考图
+            # R2V: Multi-image generation - current upstream protocol supports max 3 reference images
             elif video_type == "r2v":
                 if max_images is not None and image_count > max_images:
                     error_msg = f"❌ Multi-image video model supports up to {max_images} reference images, provided {image_count}"
@@ -1467,7 +1467,7 @@ class GenerationHandler:
             end_media_id = None
             reference_images = []
 
-            # I2V: 首尾帧处理
+            # I2V: First/Last frame processing
             if video_type == "i2v" and images:
                 if image_count == 1:
                     # Only 1 image: use as first frame only
@@ -1476,7 +1476,7 @@ class GenerationHandler:
                     start_media_id = await self.flow_client.upload_image(
                         token.at, images[0], model_config["aspect_ratio"], project_id=project_id
                     )
-                    debug_logger.log_info(f"[I2V] 仅上传首帧: {start_media_id}")
+                    debug_logger.log_info(f"[I2V] Only uploaded first frame: {start_media_id}")
 
                 elif image_count == 2:
                     # 2 images: first + last frame
@@ -1488,9 +1488,9 @@ class GenerationHandler:
                     end_media_id = await self.flow_client.upload_image(
                         token.at, images[1], model_config["aspect_ratio"], project_id=project_id
                     )
-                    debug_logger.log_info(f"[I2V] 上传首尾帧: {start_media_id}, {end_media_id}")
+                    debug_logger.log_info(f"[I2V] Uploaded first and last frames: {start_media_id}, {end_media_id}")
 
-            # R2V: 多图处理
+            # R2V: Multi-image processing
             elif video_type == "r2v" and images:
                 if stream:
                     yield self._create_stream_chunk(f"Uploading {image_count} reference images...\n")
@@ -1510,10 +1510,10 @@ class GenerationHandler:
                 yield self._create_stream_chunk("Submitting video generation task...\n")
             submit_started_at = time.time()
 
-            # I2V: 首尾帧生成
+            # I2V: First/Last frame generation
             if video_type == "i2v" and start_media_id:
                 if end_media_id:
-                    # 有首尾帧
+                    # Has first and last frames
                     result = await self.flow_client.generate_video_start_end(
                         at=token.at,
                         project_id=project_id,
@@ -1527,9 +1527,9 @@ class GenerationHandler:
                         token_video_concurrency=token.video_concurrency,
                     )
                 else:
-                    # 只有首帧 - 需要去掉 model_key 中的 _fl
-                    # 情况1: _fl_ 在中间 (如 veo_3_1_i2v_s_fast_fl_ultra_relaxed -> veo_3_1_i2v_s_fast_ultra_relaxed)
-                    # 情况2: _fl 在结尾 (如 veo_3_1_i2v_s_fast_ultra_fl -> veo_3_1_i2v_s_fast_ultra)
+                    # Only first frame - need to remove _fl from model_key
+                    # Case 1: _fl_ in middle (e.g., veo_3_1_i2v_s_fast_fl_ultra_relaxed -> veo_3_1_i2v_s_fast_ultra_relaxed)
+                    # Case 2: _fl at end (e.g., veo_3_1_i2v_s_fast_ultra_fl -> veo_3_1_i2v_s_fast_ultra)
                     actual_model_key = model_config["model_key"].replace("_fl_", "_")
                     if actual_model_key.endswith("_fl"):
                         actual_model_key = actual_model_key[:-3]
@@ -1546,7 +1546,7 @@ class GenerationHandler:
                         token_video_concurrency=token.video_concurrency,
                     )
 
-            # R2V: 多图生成
+            # R2V: Multi-image generation
             elif video_type == "r2v" and reference_images:
                 result = await self.flow_client.generate_video_reference_images(
                     at=token.at,
@@ -1575,11 +1575,11 @@ class GenerationHandler:
             if video_trace is not None:
                 video_trace["submit_generation_ms"] = int((time.time() - submit_started_at) * 1000)
 
-            # 获取task_id和operations
+            # Get task_id and operations
             operations = result.get("operations", [])
             if not operations:
                 self._mark_generation_failed(generation_result, "\u751f\u6210\u4efb\u52a1\u521b\u5efa\u5931\u8d25")
-                yield self._create_error_response("生成任务创建失败", status_code=502)
+                yield self._create_error_response("Generation task creation failed", status_code=502)
                 return
 
             operation = operations[0]
@@ -1630,7 +1630,7 @@ class GenerationHandler:
         """Poll video generation results
         
         Args:
-            upsample_config: 放大配置 {"resolution": "VIDEO_RESOLUTION_4K", "model_key": "veo_3_1_upsampler_4k"}
+            upsample_config: Upscale config {"resolution": "VIDEO_RESOLUTION_4K", "model_key": "veo_3_1_upsampler_4k"}
         """
 
         max_attempts = config.max_poll_attempts
@@ -1664,7 +1664,7 @@ class GenerationHandler:
                 if stream and attempt % progress_update_interval == 0:  # Report every 20 seconds
                     progress = min(int((attempt / max_attempts) * 100), 95)
                     await self._update_request_log_progress(request_log_state, token_id=token.id, status_text="video_polling", progress=max(45, progress), response_extra={"upstream_status": status})
-                    yield self._create_stream_chunk(f"生成进度: {progress}%\n")
+                    yield self._create_stream_chunk(f"Generation progress: {progress}%\n")
 
                 # Check status
                 if status == "MEDIA_GENERATION_STATUS_SUCCESSFUL":
@@ -1740,7 +1740,7 @@ class GenerationHandler:
                                 yield self._create_stream_chunk(f"⚠️ Cache failed: {cache_error}\nReturning source link...\n")
                     else:
                         if stream:
-                            yield self._create_stream_chunk("缓存已关闭,正在返回源链接...\n")
+                            yield self._create_stream_chunk("Cache closed, returning source link...\n")
 
                     # Update database
                     task_id = operation["operation"]["name"]
@@ -1780,7 +1780,7 @@ class GenerationHandler:
                     error_code = error_info.get("code", "unknown")
                     error_message = error_info.get("message", "Unknown error")
                     
-                    # Update database任务状态
+                    # Update database task status
                     await self._fail_video_task(
                         checked_operations,
                         f"{error_message} (code: {error_code})"

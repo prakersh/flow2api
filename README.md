@@ -120,6 +120,44 @@ After the service starts, access the admin panel at: **http://localhost:8000**. 
 - **Username**: `admin`
 - **Password**: `admin`
 
+## Connecting Your Google Account
+
+Flow2API uses Google Labs (Flow) session tokens to authenticate. You need to add your Google account session token to use the API.
+
+### Method 1: Manual Session Token Import
+
+1. **Open Google Chrome** and go to [labs.google.com/fx](https://labs.google.com/fx)
+2. **Log in** with your Google account (must have Flow access)
+3. **Open Developer Tools**: Press `F12` or `Cmd+Option+I` (Mac)
+4. **Go to Application Tab** → Expand "Cookies" → Click on `https://labs.google.com`
+5. **Copy the `__Secure-next-auth.session-token` cookie value**
+6. **Go to Flow2API Admin Panel** → Tokens → Add Token
+7. **Paste the session token** and save
+
+The system will automatically convert your session token to an access token.
+
+### Method 2: Chrome Extension (Auto-Refresh)
+
+For automatic token refresh, install the [Flow2API Token Updater](https://github.com/TheSmallHanCat/Flow2API-Token-Updater) Chrome extension:
+
+1. Install the extension from the link above
+2. Configure the Connection Endpoint and Token in the extension settings
+3. The extension will automatically extract and update your Google Labs cookies
+
+### Understanding Tokens
+
+| Term | Description |
+|------|-------------|
+| **ST (Session Token)** | `__Secure-next-auth.session-token` cookie from Google Labs |
+| **AT (Access Token)** | Internal token used for API requests |
+| **Auto-Refresh** | System automatically refreshes AT when it expires (within 1 hour) |
+
+### Troubleshooting
+
+- **Invalid token**: Make sure you're logged into Google Labs with a valid account
+- **Token expired**: Re-import a fresh session token from your browser
+- **No credits**: Your Google account needs credits in Google Labs to generate images/videos
+
 ## Supported Models
 
 ### Image Generation
