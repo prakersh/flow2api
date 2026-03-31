@@ -109,14 +109,14 @@ python main.py
 
 ### 首次访问
 
-服务启动后,访问管理后台: **http://localhost:8000**,首次登录后请立即修改密码!
+服务启动后,访问管理后台: **http://localhost:38000**,首次登录后请立即修改密码!
 
 - **用户名**: `admin`
 - **密码**: `admin`
 
 ### 模型测试页面
 
-访问 **http://localhost:8000/test** 可打开内置的模型测试页面，支持：
+访问 **http://localhost:38000/test** 可打开内置的模型测试页面，支持：
 
 - 按分类浏览所有可用模型（图片生成、文/图生视频、多图视频、视频放大等）
 - 输入提示词一键测试，流式显示生成进度
@@ -277,7 +277,7 @@ python main.py
 > 如需流式返回，可将路径替换为 `:streamGenerateContent?alt=sse`。
 
 ```bash
-curl -X POST "http://localhost:8000/models/gemini-3.1-flash-image:generateContent" \
+curl -X POST "http://localhost:38000/models/gemini-3.1-flash-image:generateContent" \
   -H "x-goog-api-key: han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -311,7 +311,7 @@ curl -X POST "http://localhost:8000/models/gemini-3.1-flash-image:generateConten
 ### 文生图
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -329,7 +329,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 ### 图生图
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -358,7 +358,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 ### 文生视频
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -376,7 +376,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 ### 首尾帧生成视频
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
@@ -415,7 +415,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 > 当前最多传 **3 张参考图**。
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+curl -X POST "http://localhost:38000/v1/chat/completions" \
   -H "Authorization: Bearer han1234" \
   -H "Content-Type: application/json" \
   -d '{
