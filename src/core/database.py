@@ -518,7 +518,7 @@ class Database:
         async with self._connect(write=True) as db:
             await db.execute("PRAGMA journal_mode = WAL")
             await db.execute("PRAGMA synchronous = NORMAL")
-            # Tokens table (Flow2API版本)
+            # Tokens table (Flow2API version)
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS tokens (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -546,7 +546,7 @@ class Database:
                 )
             """)
 
-            # Projects table (新增)
+            # Projects table (newly added)
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS projects (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -737,7 +737,7 @@ class Database:
             # Migrate request_logs table if needed
             await self._migrate_request_logs(db)
 
-            # Request logs query indexes (列表按 created_at 排序 / token 过滤)
+            # Request logs query indexes (sorted by created_at / filtered by token)
             await db.execute("CREATE INDEX IF NOT EXISTS idx_request_logs_created_at ON request_logs(created_at DESC)")
             await db.execute("CREATE INDEX IF NOT EXISTS idx_request_logs_token_id_created_at ON request_logs(token_id, created_at DESC)")
 
@@ -1722,8 +1722,8 @@ class Database:
                 new_personal_idle_ttl = personal_idle_tab_ttl_seconds if personal_idle_tab_ttl_seconds is not None else current.get("personal_idle_tab_ttl_seconds", 600)
                 new_remote_timeout = max(5, int(new_remote_timeout)) if new_remote_timeout is not None else 60
                 new_personal_project_pool_size = max(1, min(50, int(new_personal_project_pool_size)))
-                new_personal_max_tabs = max(1, min(50, int(new_personal_max_tabs)))  # 限制1-50
-                new_personal_idle_ttl = max(60, int(new_personal_idle_ttl))  # 最少60秒
+                new_personal_max_tabs = max(1, min(50, int(new_personal_max_tabs)))  # Limit 1-50
+                new_personal_idle_ttl = max(60, int(new_personal_idle_ttl))  # Minimum 60 seconds
 
                 await db.execute("""
                     UPDATE captcha_config

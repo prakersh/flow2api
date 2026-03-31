@@ -100,8 +100,8 @@ DEFAULT_ASPECT = "landscape"
 OPENAI_IMAGE_SIZE_RE = re.compile(r"^(?P<w>\d{2,5})\s*[xX]\s*(?P<h>\d{2,5})$")
 
 # OpenAI common quality → imageSize mapping
-# - The imageSize here is flow2api's “upscaling tier”, not equivalent to OpenAI's pixel dimensions;
-#   but can be used as an approximate mapping for “quality/clarity”.
+# - The imageSize here is flow2api's "upscaling tier", not equivalent to OpenAI's pixel dimensions;
+#   but can be used as an approximate mapping for "quality/clarity".
 OPENAI_QUALITY_MAP = {
     "low": None,
     "standard": None,
@@ -441,8 +441,8 @@ def resolve_model_name(
         supported_aspects = MODEL_SUPPORTED_ASPECTS.get(base, [])
         if aspect_ratio not in supported_aspects and supported_aspects:
             debug_logger.log_warning(
-                f"[MODEL_RESOLVER] 模型 {base} 不支持 aspectRatio={aspect_ratio}，"
-                f"降级到 {DEFAULT_ASPECT}"
+                f"[MODEL_RESOLVER] model {base} does not support aspectRatio={aspect_ratio},"
+                f"falling back to {DEFAULT_ASPECT}"
             )
             aspect_ratio = DEFAULT_ASPECT
 
@@ -456,19 +456,19 @@ def resolve_model_name(
                 resolved = f"{resolved}-{image_size}"
             else:
                 debug_logger.log_warning(
-                    f"[MODEL_RESOLVER] 模型 {base} 不支持 imageSize={image_size}，忽略"
+                    f"[MODEL_RESOLVER] model {base} does not support imageSize={image_size}, ignoring"
                 )
 
         # Final validation
         if model_config and resolved not in model_config:
             debug_logger.log_warning(
-                f"[MODEL_RESOLVER] 解析后的模型名 {resolved} 不在 MODEL_CONFIG 中，"
-                f"回退到原始模型名 {model}"
+                f"[MODEL_RESOLVER] resolved model name {resolved} not in MODEL_CONFIG,"
+                f"falling back to original model name {model}"
             )
             return model
 
         debug_logger.log_info(
-            f"[MODEL_RESOLVER] 模型名转换: {model} → {resolved} "
+            f"[MODEL_RESOLVER] model name conversion: {model} -> {resolved} "
             f"(aspectRatio={aspect_ratio}, imageSize={image_size or 'default'})"
         )
         return resolved
@@ -488,14 +488,14 @@ def resolve_model_name(
 
         if resolved and model_config and resolved in model_config:
             debug_logger.log_info(
-                f"[MODEL_RESOLVER] 视频模型名转换: {model} → {resolved} "
+                f"[MODEL_RESOLVER] video model name conversion: {model} -> {resolved}"
                 f"(aspectRatio={aspect_ratio})"
             )
             return resolved
 
         debug_logger.log_warning(
-            f"[MODEL_RESOLVER] 视频模型 {model} 解析失败 (aspect={aspect_ratio})，"
-            f"使用原始模型名"
+            f"[MODEL_RESOLVER] video model {model} resolution failed (aspect={aspect_ratio}),"
+            f"using original model name"
         )
         return model
 

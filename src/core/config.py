@@ -394,7 +394,7 @@ class Config:
         """Maximum shared tabs for built-in browser captcha"""
         value = self._config.get("captcha", {}).get("personal_max_resident_tabs", 5)
         try:
-            return max(1, min(50, int(value)))  # 限制在1-50之间
+            return max(1, min(50, int(value)))  # Limit between 1-50
         except Exception:
             return 5
 

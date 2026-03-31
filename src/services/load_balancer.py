@@ -269,7 +269,7 @@ class LoadBalancer:
                 continue
 
             if reserve and not await self._reserve_slot(token.id, for_image_generation, for_video_generation):
-                debug_logger.log_info(f"[LOAD_BALANCER] 跳过 Token {token.id}: 预占槽位失败")
+                debug_logger.log_info(f"[LOAD_BALANCER] Skipping Token {token.id}: Slot reservation failed")
                 continue
 
             if track_pending:
@@ -291,7 +291,7 @@ class LoadBalancer:
         for_video_generation: bool = False,
         model: Optional[str] = None,
     ) -> Optional[str]:
-        “””Provide more specific reason for “no available account”, primarily used for resolution/tier tier prompts.”””
+        """Provide more specific reason for "no available account", primarily used for resolution/tier tier prompts."""
         active_tokens = await self.token_manager.get_active_tokens()
         if not active_tokens:
             return None

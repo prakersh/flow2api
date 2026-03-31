@@ -70,12 +70,12 @@ class TokenStats(BaseModel):
     error_count: int = 0  # Historical total errors (never reset)
     last_success_at: Optional[datetime] = None
     last_error_at: Optional[datetime] = None
-    # 今日统计
+    # Today's statistics
     today_image_count: int = 0
     today_video_count: int = 0
     today_error_count: int = 0
     today_date: Optional[str] = None
-    # Consecutive error count (for auto-disable判断)
+    # Consecutive error count (for auto-disable decision)
     consecutive_error_count: int = 0
 
 
@@ -83,7 +83,7 @@ class Task(BaseModel):
     """Generation task"""
 
     id: Optional[int] = None
-    task_id: str  # Flow API返回的operation name
+    task_id: str  # Flow API operation name
     token_id: int
     model: str
     prompt: str
