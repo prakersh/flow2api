@@ -395,9 +395,9 @@ class Database:
                     ("video_enabled", "BOOLEAN DEFAULT 1"),
                     ("image_concurrency", "INTEGER DEFAULT -1"),
                     ("video_concurrency", "INTEGER DEFAULT -1"),
-                    ("captcha_proxy_url", "TEXT"),  # token级打码代理
-                    ("ban_reason", "TEXT"),  # 禁用原因
-                    ("banned_at", "TIMESTAMP"),  # 禁用时间
+                    ("captcha_proxy_url", "TEXT"),  # Token-level captcha proxy
+                    ("ban_reason", "TEXT"),  # Ban reason
+                    ("banned_at", "TIMESTAMP"),  # Ban timestamp
                 ]
 
                 for col_name, col_type in columns_to_add:
@@ -464,7 +464,7 @@ class Database:
                     ("today_video_count", "INTEGER DEFAULT 0"),
                     ("today_error_count", "INTEGER DEFAULT 0"),
                     ("today_date", "DATE"),
-                    ("consecutive_error_count", "INTEGER DEFAULT 0"),  # 🆕 连续错误计数
+                    ("consecutive_error_count", "INTEGER DEFAULT 0"),  # Consecutive error count
                 ]
 
                 for col_name, col_type in stats_columns_to_add:
@@ -478,7 +478,7 @@ class Database:
             # Check and add missing columns to plugin_config table
             if await self._table_exists(db, "plugin_config"):
                 plugin_columns_to_add = [
-                    ("auto_enable_on_update", "BOOLEAN DEFAULT 1"),  # 默认开启
+                    ("auto_enable_on_update", "BOOLEAN DEFAULT 1"),  # Enabled by default
                 ]
 
                 for col_name, col_type in plugin_columns_to_add:
@@ -753,7 +753,7 @@ class Database:
             has_operation = await self._column_exists(db, "request_logs", "operation")
 
             if has_model and not has_operation:
-                print("?? ?????request_logs???,????...")
+                print("Migrating request_logs table, please wait...")
                 await db.execute("ALTER TABLE request_logs RENAME TO request_logs_old")
                 await db.execute("""
                     CREATE TABLE request_logs (
@@ -798,7 +798,7 @@ class Database:
                     FROM request_logs_old
                 """)
                 await db.execute("DROP TABLE request_logs_old")
-                print("? request_logs?????")
+                print("request_logs migration completed")
 
             if not await self._column_exists(db, "request_logs", "status_text"):
                 await db.execute("ALTER TABLE request_logs ADD COLUMN status_text TEXT DEFAULT ''")
@@ -808,7 +808,7 @@ class Database:
                 await db.execute("ALTER TABLE request_logs ADD COLUMN updated_at TIMESTAMP")
             await db.execute("UPDATE request_logs SET updated_at = created_at WHERE updated_at IS NULL")
         except Exception as e:
-            print(f"?? request_logs?????: {e}")
+            print(f"Error migrating request_logs table: {e}")
             # Continue even if migration fails
 
     # Token operations

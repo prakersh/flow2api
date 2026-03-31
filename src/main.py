@@ -44,11 +44,11 @@ async def lifespan(app: FastAPI):
         await db.check_and_migrate_db(config_dict)
         print("✓ Database migration check completed.")
 
-    # 启动时统一把数据库配置同步到内存，避免 personal/brower 相关运行时配置遗漏。
+    # At startup, sync database config to memory to avoid missing personal/browser related runtime config.
     await db.reload_config_to_memory()
     captcha_config = await db.get_captcha_config()
 
-    # 尽量在浏览器服务启动前就拿到 token 快照，后续并发管理和预热共用。
+    # Try to get token snapshot before browser service starts, for concurrent management and warmup.
     tokens = await token_manager.get_all_tokens()
 
     # Initialize browser captcha service if needed
@@ -87,7 +87,7 @@ async def lifespan(app: FastAPI):
         elif tokens:
             print("⚠ Browser captcha resident warmup skipped: no tab warmed successfully")
         else:
-            # 没有任何可用 token 时，打开登录窗口供用户手动操作
+            # When no available tokens, open login window for user manual operation
             await browser_service.open_login_window()
             print("⚠ No active token found, opened login window for manual setup")
     elif captcha_config.captcha_method == "browser":
@@ -112,10 +112,10 @@ async def lifespan(app: FastAPI):
     # Start 429 auto-unban task
     import asyncio
     async def auto_unban_task():
-        """定时任务：每小时检查并解禁429被禁用的token"""
+        """Scheduled task: check and unban 429-disabled tokens every hour"""
         while True:
             try:
-                await asyncio.sleep(3600)  # 每小时执行一次
+                await asyncio.sleep(3600)  # Execute once per hour
                 await token_manager.auto_unban_429_tokens()
             except Exception as e:
                 print(f"❌ Auto-unban task error: {e}")
@@ -163,7 +163,7 @@ generation_handler = GenerationHandler(
     load_balancer,
     db,
     concurrency_manager,
-    proxy_manager  # 添加 proxy_manager 参数
+    proxy_manager  # Add proxy_manager parameter
 )
 
 # Set dependencies
